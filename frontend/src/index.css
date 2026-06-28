@@ -1,0 +1,45 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #21263a;
+  --border: #2a2f45;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --radius: 10px;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+input, textarea { font-family: inherit; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius); padding: 10px 14px; width: 100%; outline: none; transition: border-color 0.2s; }
+input:focus, textarea:focus { border-color: var(--accent); }
+
+button { font-family: inherit; cursor: pointer; border: none; border-radius: var(--radius); padding: 10px 20px; font-weight: 500; transition: all 0.2s; }
+
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-danger:hover { background: var(--danger); color: white; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.badge-success { background: #10b98120; color: var(--success); }
+.badge-warning { background: #f59e0b20; color: var(--warning); }
+.badge-danger { background: #ef444420; color: var(--danger); }
+.badge-info { background: #6366f120; color: var(--accent-hover); }
