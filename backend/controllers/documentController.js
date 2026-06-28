@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-const pdfParse = require('pdf-parse');
 const supabase = require('../db/supabase');
 const { chunkText } = require('../services/embeddings');
 const { storeDocumentChunks, deleteDocumentChunks } = require('../services/vectorStore');
@@ -10,30 +9,32 @@ async function uploadDocument(req, res) {
     const { data: ws } = await supabase.from('workspaces').select('id').eq('id', workspaceId).eq('user_id', req.user.id).single();
     if (!ws) return res.status(404).json({ error: 'Workspace not found' });
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
     const { originalname, buffer, mimetype, size } = req.file;
     let text = '';
     if (mimetype === 'application/pdf') {
-      const parsed = await pdfParse(buffer);
-      text = parsed.text;
+      const PDFParser = require('pdf2json');
+      const parser = new PDFParser();
+      text = await new Promise((resolve, reject) => {
+        parser.on('pdfParser_dataReady', d => {
+          const t = d.Pages.map(p => p.Texts.map(t => { try { return decodeURIComponent(t.R[0].T); } catch(e) { return ''; } }).join(' ')).join(' ');
+          resolve(t);
+        });
+        parser.on('pdfParser_dataError', reject);
+        parser.parseBuffer(buffer);
+      });
     } else if (mimetype === 'text/plain') {
       text = buffer.toString('utf-8');
     } else {
       return res.status(400).json({ error: 'Only PDF and TXT files are supported' });
     }
-
     if (!text.trim()) return res.status(400).json({ error: 'Document appears to be empty' });
-
     const { data: existing } = await supabase.from('documents').select('id').eq('workspace_id', workspaceId).eq('name', originalname).single();
     let finalDocumentId = existing ? existing.id : uuidv4();
-
     if (!existing) {
       await supabase.from('documents').insert({ id: finalDocumentId, workspace_id: workspaceId, user_id: req.user.id, name: originalname, size, created_at: new Date().toISOString() });
     }
-
     const chunks = chunkText(text, 500, 100);
     const chunkCount = await storeDocumentChunks(workspaceId, finalDocumentId, originalname, chunks);
-
     res.status(201).json({ message: 'Document uploaded and indexed successfully', document: { id: finalDocumentId, name: originalname, size, chunkCount } });
   } catch (err) {
     console.error('Upload error:', err);

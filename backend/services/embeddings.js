@@ -1,11 +1,9 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const { CohereClient } = require('cohere-ai');
+const cohere = new CohereClient({ token: process.env.COHERE_API_KEY });
 
 async function generateEmbedding(text) {
-  const model = genAI.getGenerativeModel({ model: 'text-embedding-004' });
-  const result = await model.embedContent(text);
-  return result.embedding.values;
+  const res = await cohere.embed({ texts: [text], model: 'embed-english-v3.0', inputType: 'search_document' });
+  return res.embeddings[0];
 }
 
 function chunkText(text, chunkSize = 500, overlap = 100) {
